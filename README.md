@@ -1,2 +1,14 @@
-# DBMS_Project4
-Project 4 Prompt 1: Aggregates in SQL
+//----------------------------------------------------------------------
+//                 COP6712 Final Project                                
+//----------------------------------------------------------------------
+//         Prompt 1: Aggregates in PostgreSql
+//----------------------------------------------------------------------
+
+Group Members:
+- Tommy Truong
+- Mushfiq Mahmud
+- Luis Quezada
+
+Files:
+- data.sql
+- spatialDataHistogram.cpp
