@@ -2,9 +2,9 @@
  * src/tutorial/point3d.c
  *
  ******************************************************************************
-  This file contains routines that can be bound to a Postgres backend and
-  called by the backend in the process of processing queries.  The calling
-  format for these routines is dictated by Postgres architecture.
+	This file contains routines that can be bound to a Postgres backend and
+	called by the backend in the process of processing queries. The calling
+	format for these routines is dictated by Postgres architecture.
 ******************************************************************************/
 
 #include "postgres.h"
@@ -20,7 +20,6 @@ typedef struct Point3D
 	double z;
 } Point3D;
 
-
 /*****************************************************************************
  * Input/Output functions
  *****************************************************************************/
@@ -34,12 +33,14 @@ point3d_in(PG_FUNCTION_ARGS)
 	double x, y, z;
 	Point3D * result;
 
+	// check whether sql input format has 3 numbers
 	if (sscanf(str, " ( %lf , %lf, %lf )", &x, &y, &z) != 3)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 				 errmsg("invalid input syntax for type %s: \"%s\"",
 						"point3d", str)));
 
+	// save user entered coordinates
 	result = (Point3D *) palloc(sizeof(Point3D));
 	result->x = x;
 	result->y = y;

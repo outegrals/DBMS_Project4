@@ -13,7 +13,7 @@
 #
 #-------------------------------------------------------------------------
 
-MODULES = complex funcs
+MODULES = complex funcs point3d
 DATA_built = advanced.sql basics.sql complex.sql funcs.sql syscat.sql
 
 ifdef NO_PGXS
