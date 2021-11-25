@@ -27,6 +27,7 @@
 Datum
 spg_quad_config(PG_FUNCTION_ARGS)
 {
+	Point3D *test;
 	/* spgConfigIn *cfgin = (spgConfigIn *) PG_GETARG_POINTER(0); */
 	spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
 
@@ -84,6 +85,7 @@ static BOX *
 getQuadrantArea(BOX *bbox, Point *centroid, int quadrant)
 {
 	BOX		   *result = (BOX *) palloc(sizeof(BOX));
+	P
 
 	switch (quadrant)
 	{
