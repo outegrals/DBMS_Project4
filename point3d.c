@@ -8,8 +8,8 @@
 ******************************************************************************/
 
 #include "postgres.h"
-
 #include "fmgr.h"
+#include <math.h>
 
 PG_MODULE_MAGIC;
 
@@ -60,3 +60,21 @@ point3d_out(PG_FUNCTION_ARGS)
 	PG_RETURN_CSTRING(result);
 }
 
+
+/*****************************************************************************
+ * Calculate distance between 2 points
+ *****************************************************************************/
+
+PG_FUNCTION_INFO_V1(distance3d);
+
+Datum
+distance3d(PG_FUNCTION_ARGS)
+{
+	Point3D * a = (Point3D *) PG_GETARG_POINTER(0);
+	Point3D * b = (Point3D *) PG_GETARG_POINTER(1);
+	double result;
+
+	psprintf("a -> (%g,%g,%g) b -> (%g,%g,%g)", a->x, a->y, a->z, b->x, b->y, b->z);
+	result = sqrt((a->x - b->x)*(a->x - b->x) + (a->y - b->y)*(a->y - b->y) + (a->z - b->z)*(a->z - b->z));
+	PG_RETURN_POINTER(result);
+}
