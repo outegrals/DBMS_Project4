@@ -1,6 +1,7 @@
 drop type if exists point3d cascade;
 drop function if exists point3d_in cascade;
 drop function if exists point3d_out cascade;
+drop function if exists distance3d cascade;
 drop table if exists test_point3d;
 
 -- first create a skeleton type to refer to
@@ -41,3 +42,13 @@ insert into test_point3d values ('(1.0, 2.5, 3.56)');
 insert into test_point3d values ('(2.0, 1.7, 30.2)');
 
 select * from test_point3d;
+
+-- function to calculate calculate 3d spatial distance
+create function distance3d(point3d, point3d)
+returns cstring
+as '/home/mushfiq/proj4/point3d'
+language c immutable strict;
+
+select distance3d('(2,3,4)'::point3d, '(1,2,3)'::point3d);
+
+

@@ -73,8 +73,17 @@ distance3d(PG_FUNCTION_ARGS)
 	Point3D * a = (Point3D *) PG_GETARG_POINTER(0);
 	Point3D * b = (Point3D *) PG_GETARG_POINTER(1);
 	double result;
+	char * res_str;
 
-	psprintf("a -> (%g,%g,%g) b -> (%g,%g,%g)", a->x, a->y, a->z, b->x, b->y, b->z);
-	result = sqrt((a->x - b->x)*(a->x - b->x) + (a->y - b->y)*(a->y - b->y) + (a->z - b->z)*(a->z - b->z));
-	PG_RETURN_POINTER(result);
+	result = sqrt(
+		(a->x - b->x)*(a->x - b->x)
+		+ (a->y - b->y)*(a->y - b->y)
+		+ (a->z - b->z)*(a->z - b->z)
+	);
+
+	// convert result to string
+	// NOTE: I am not sure how to return as a double yet
+	// I have tried PG_RETURN_FLOAT8 and it didn't work
+	res_str = psprintf("%f", result);
+	PG_RETURN_CSTRING(res_str);
 }
