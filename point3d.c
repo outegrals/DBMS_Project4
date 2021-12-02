@@ -29,7 +29,7 @@ PG_FUNCTION_INFO_V1(point3d_in);
 Datum
 point3d_in(PG_FUNCTION_ARGS)
 {
-	char *str = PG_GETARG_CSTRING(0);
+	char * str = PG_GETARG_CSTRING(0);
 	double x, y, z;
 	Point3D * result;
 

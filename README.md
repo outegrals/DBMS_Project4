@@ -17,3 +17,15 @@
 * make note of the absolute path to these files
 * start up postgresql and run `point3d.sql` to test the output
 
+## commands
+
+```sh
+cd /root/downloads/postgresql-12.8/src/tutorial/
+make
+rm /home/mushfiq/proj4/*
+cp point3d.* /home/mushfiq/proj4/
+cd /home/mushfiq/proj4
+su - postgres
+PATH=$PATH:/usr/local/pgsql/bin
+psql test
+```
