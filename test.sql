@@ -8,6 +8,10 @@
 drop table if exists points cascade;
 drop function if exists one_to_all_others cascade;
 
+drop type if exists state cascade;
+drop function if exists stfunc cascade;
+drop aggregate if exists cagg (numeric, numeric, numeric) cascade;
+
 -- create table of separate x,y,z coordinates as columns
 create table points (
 	x numeric,
@@ -44,13 +48,13 @@ values
 -- TODO: potentially use the distance function here?
 -- TODO: need to find out how to return a set of values
 create or replace function one_to_all_others (n integer)
-returns numeric
+returns varchar
 language plpgsql
 as $$
 declare
-	query varchar := '';
+	q varchar := '';
 begin
-	query = (select array(
+	q = (select array(
 		select
 			sqrt(
 				power(x - nth_value(x,1) over w, 2)
@@ -61,10 +65,47 @@ begin
 		window w as (order by x,y,z)
 		offset n
 	));
-	raise notice '%', query;
-	return n;
+	-- raise notice '%', q;
+	return q;
 end;
 $$;
 
-select one_to_all_others(1);
+-- select one_to_all_others(1);
 
+-- create custom aggregate to loop through each row
+-- intermediary state to save between rows
+create type state as (
+	res varchar,
+	n integer
+);
+
+-- state transition function
+create or replace function stfunc (
+	s state,
+	x numeric,
+	y numeric,
+	z numeric
+)
+returns state
+language plpgsql
+as $$
+declare
+	sn state;
+	query varchar = '';
+begin
+	query = (select one_to_all_others(s.n + 1));
+	-- raise notice '%', query;
+	sn.res = s.res || '~!~' || query;
+	sn.n = s.n + 1;
+return sn;
+end;
+$$;
+
+create or replace aggregate cagg (numeric, numeric, numeric)
+(
+	sfunc = stfunc,
+	stype = state,
+	initcond = '("",0)'
+);
+
+select string_to_array(cagg(x,y,z), '~!~') from points;
