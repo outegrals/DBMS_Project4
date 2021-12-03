@@ -1,15 +1,25 @@
+-- this file tries to create a custom type in plpgsql called point3d
+-- and creates a table using that type. this way we can only access the
+-- individual dimensions inside a function that takes in the custom type as an
+-- argument as I have been unable to query a field in a custom type directly in
+-- SQL.
+
+-- clean up
 drop type if exists point3d cascade;
 drop table if exists points cascade;
 drop function if exists myFunc cascade;
 
+-- custom type
 create type point3d as (
 	x numeric,
 	y numeric,
 	z numeric
 );
 
+-- create table with custom type
 create table points (p point3d);
 
+-- populate table
 insert into points
 values
 ((-63.91,0.51,-20.28)),
@@ -31,6 +41,7 @@ values
 ((-54.24,25.24,-48.78)),
 ((5.59,-74.44,81.68));
 
+-- POC to show how to access the type fields
 create or replace function myFunc (p point3d)
 returns numeric
 language plpgsql

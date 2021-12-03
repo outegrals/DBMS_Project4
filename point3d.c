@@ -34,11 +34,18 @@ point3d_in(PG_FUNCTION_ARGS)
 	Point3D * result;
 
 	// check whether sql input format has 3 numbers
-	if (sscanf(str, " ( %lf , %lf, %lf )", &x, &y, &z) != 3)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type %s: \"%s\"",
-						"point3d", str)));
+	if (sscanf(str, " ( %lf , %lf, %lf )", &x, &y, &z) != 3) {
+		ereport(
+			ERROR,
+			(
+				errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+				errmsg(
+					"invalid input syntax for type %s: \"%s\"",
+					"point3d", str
+				)
+			)
+		);
+	}
 
 	// save user entered coordinates
 	result = (Point3D *) palloc(sizeof(Point3D));

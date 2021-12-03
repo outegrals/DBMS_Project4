@@ -1,12 +1,21 @@
+-- this file tries to create the points as 3 different fields in a table
+-- without creating a custom type. This way, we can perform sql queries
+-- directly on this table. However, I am still trying to figure out how to
+-- return a set of data as a function result and as such can now only output
+-- the distances calculated as an array string
+
+-- clean up
 drop table if exists points cascade;
 drop function if exists one_to_all_others cascade;
 
+-- create table of separate x,y,z coordinates as columns
 create table points (
 	x numeric,
 	y numeric,
 	z numeric
 );
 
+-- populate table
 insert into points
 values
 (-63.91,0.51,-20.28),
@@ -45,8 +54,8 @@ begin
 		select
 			sqrt(
 				power(x - nth_value(x,1) over w, 2)
-			+ power(y - nth_value(y,1) over w, 2)
-			+ power(z - nth_value(z,1) over w, 2)
+				+ power(y - nth_value(y,1) over w, 2)
+				+ power(z - nth_value(z,1) over w, 2)
 			)
 		from points
 		window w as (order by x,y,z)
