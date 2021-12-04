@@ -6,7 +6,7 @@ CREATE TABLE points2d( p point );
 
 CREATE INDEX points_quad_indx ON points2d USING spgist(p);
 
--- working to this to calculate the distance
+-- calculate the distance
 
 CREATE OR REPLACE FUNCTION DIS(float4, float4, float4, float4) RETURNS float4 AS 'qt_2dp.so', 'distance2d' LANGUAGE C STRICT IMMUTABLE;
 
