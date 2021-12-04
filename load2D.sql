@@ -1,7 +1,7 @@
 -- Drops necessary tables and functions
-DROP TABLE points2d CASCADE;
-DROP FUNCTION DIS2D(anyelement);
-DROP FUNCTION distance2d(float4, float4, float4, float4);
+DROP TABLE IF EXISTS points2d CASCADE;
+DROP FUNCTION IF EXISTS DIS2D CASCADE;
+DROP FUNCTION IF EXISTS distance2d CASCADE;
 
 -- Creates the table of 2D points
 CREATE TABLE points2d( p point );
@@ -14,7 +14,7 @@ CREATE INDEX points_quad_indx ON points2d USING spgist(p);
 
 -- Creates the function call for calculating distance between two 2D points
 CREATE OR REPLACE FUNCTION distance2d(float4, float4, float4, float4) 
-RETURNS float4 AS 'qt_2dp.so', 'distance2d' 
+RETURNS float4 AS 'point3d.so', 'distance2d' 
 LANGUAGE C STRICT IMMUTABLE;
 
 -- Creates the function to call the calculation of distance betwen two 2D points

@@ -23,21 +23,26 @@ Datum distance2d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(distance2d);
 
 /* The actual function starts here. The function name is distance2d.
-// PG_FUNCTION_ARGS accepts the runtime arguments given by the user. 
+// PG_FUNCTION_ARGS has the point values. 
 // We calculate the distance of two points that are given 
 */
 Datum distance2d(PG_FUNCTION_ARGS){
 
+    // Stores the values of the points to float4 types
     float4   p1_x = PG_GETARG_FLOAT4(0);
     float4   p1_y = PG_GETARG_FLOAT4(1);
     float4   p2_x = PG_GETARG_FLOAT4(2);
     float4   p2_y = PG_GETARG_FLOAT4(3);
-    float4   distance;
 
+    // Will store the distance after calculation
+    float4   distance;  
+
+    // The calculation of the distance value
     distance =  sqrt( 
                       ( (p1_x - p2_x) * (p1_x - p2_x) )
                     + ( (p1_y - p2_y) * (p1_y - p2_y) )
                     );
 
+    // Returns the distance as a type float4
     PG_RETURN_FLOAT4( distance );
 }
