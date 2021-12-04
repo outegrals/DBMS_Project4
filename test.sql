@@ -7,7 +7,7 @@
 -- clean up
 drop type if exists state cascade;
 drop table if exists points cascade;
-drop function if exists one_to_all_others cascade;
+drop function if exists one_to_all_following cascade;
 drop function if exists stfunc cascade;
 drop function if exists calc_histogram;
 drop function if exists ffunc;
@@ -68,6 +68,7 @@ declare
 	sn state;
 	query numeric[];
 begin
+	-- TODO: pass in bucket width as a parameter
 	query = (select array(select one_to_all_following(s.n + 1, 10)));
 	sn.res = s.res || query;
 	sn.n = s.n + 1;
