@@ -208,5 +208,37 @@ create or replace aggregate cagg (numeric, numeric, numeric) (
 	initcond = '({},0)'
 );
 
-select cagg(x,y,z) from points;
+-- function to calculate the count of each value in an input array
+create or replace function calc_histogram (arr numeric[])
+returns integer[]
+language plpgsql
+as $$
+declare
+	s integer[];
+	x integer;
+begin
+	foreach x in array arr
+	loop
+		if s[x] is null then
+			-- this is a new index, so update its found value to 1
+			s[x] = 1;
+		else
+			-- this position already exists, so increment it
+			s[x] = s[x] + 1;
+		end if;
+	end loop;
+	-- replace nulls with 0
+	s = array_replace(s, null, 0);
+	return s;
+end;
+$$;
 
+-- turn the histogram into a table
+select * from unnest(array(
+	-- calculate the histogram
+	select calc_histogram(array(
+		-- calculate point-to-point distance of all points
+		-- and find histogram indices
+		select cagg(x,y,z) from points
+	))
+)) as SDH;
