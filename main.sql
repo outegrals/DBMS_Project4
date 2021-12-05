@@ -4,15 +4,6 @@
 -- return a set of data as a function result and as such can now only output
 -- the distances calculated as an array string
 
--- TODO: add references in paper
--- TODO: talk about SDH distribution
--- TODO: explain how quad tree could be used (luis)
--- TODO: add image for point-to-point distance calculation
--- TODO: add image for histogram index calculation
--- TODO: have bucket width be user input
--- TODO: don't hardcode points table and column names
--- TODO: make it work with custom point type
-
 -- clean up
 drop type if exists state cascade;
 drop table if exists points cascade;
@@ -20,6 +11,7 @@ drop function if exists one_to_all_following cascade;
 drop function if exists stfunc cascade;
 drop function if exists calc_histogram;
 drop function if exists ffunc;
+drop function if exists sdh;
 drop aggregate if exists cagg (numeric, numeric, numeric) cascade;
 
 -- intermediary state to save between rows
@@ -38,7 +30,6 @@ create table points (
 -- this function calculates the distances of the point at row n to all other
 -- points that comes after it and calculates the histogram positional index
 -- that distance should belong to given the bucket width
--- TODO: potentially use the distance function here?
 create or replace function one_to_all_following (
 	n integer,
 	bucketWidth integer
@@ -78,7 +69,6 @@ declare
 	sn state;
 	query numeric[];
 begin
-	-- TODO: pass in bucket width as a parameter
 	query = (select array(select one_to_all_following(s.n + 1, bucketWidth)));
 	sn.res = s.res || query;
 	sn.n = s.n + 1;
