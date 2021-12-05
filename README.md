@@ -1,9 +1,9 @@
 # COP6712 Final Project - Aggregates in PostgreSql
 
 ### Group Members
-- Tommy Truong
-- Mushfiq Mahmud
-- Luis Quezada
+- Tommy Truong - U08939516
+- Mushfiq Mahmud - U32950410
+- Luis Quezada - U29144164
 
 ## Custom PostgreSQL Type: Point3D
 
