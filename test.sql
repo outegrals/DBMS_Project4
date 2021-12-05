@@ -40,39 +40,35 @@ create table points (
 -- that distance should belong to given the bucket width
 -- TODO: potentially use the distance function here?
 create or replace function one_to_all_following (
-	_table regclass,
-	_x varchar,
-	_y varchar,
-	_z varchar,
-	bucketWidth integer,
-	n integer
+	n integer,
+	bucketWidth integer
 )
-returns table(foo numeric)
+returns table (foo numeric)
 language plpgsql
 as $$
 begin
-	return query execute
-		'select floor(
+	return query (
+		select
+		floor(
 			sqrt(
-				power('||_x||' - nth_value('||_x||','||n||') over w, 2)
-				+ power('||_y||' - nth_value('||_y||','||n||') over w, 2)
-				+ power('||_z||' - nth_value('||_z||','||n||') over w, 2)
-			) / '||bucketWidth||'
+				power(x - nth_value(x,n) over w, 2)
+				+ power(y - nth_value(y,n) over w, 2)
+				+ power(z - nth_value(z,n) over w, 2)
+			) / bucketWidth
 		)
-		from '||_table||'
-		window w as (order by '||_x||','||_y||','||_z||')
-		offset '||n||'';
+		from points
+		window w as (order by x,y,z)
+		offset n
+	);
 end;
 $$;
-select input('points', 'x', 'y', 'z', 88, 10);
 
 -- state transition function: passed from row to row
 create or replace function stfunc (
 	s state,
-	_table regclass,
-	_x varchar,
-	_y varchar,
-	_z varchar,
+	x numeric,
+	y numeric,
+	z numeric,
 	bucketWidth integer
 )
 returns state
@@ -83,7 +79,7 @@ declare
 	query numeric[];
 begin
 	-- TODO: pass in bucket width as a parameter
-	query = (select array(select one_to_all_following('points', 'x', 'y', 'z', bucketWidth, s.n + 1)));
+	query = (select array(select one_to_all_following(s.n + 1, bucketWidth)));
 	sn.res = s.res || query;
 	sn.n = s.n + 1;
 return sn;
@@ -102,7 +98,7 @@ end;
 $$;
 
 -- custom aggregate incorporating the above functions
-create or replace aggregate cagg (numeric, numeric, numeric) (
+create or replace aggregate cagg (numeric, numeric, numeric, integer) (
 	sfunc = stfunc,
 	stype = state,
 	finalfunc = ffunc,
@@ -135,22 +131,22 @@ end;
 $$;
 
 -- turn the histogram into a table
-create or replace function sdh()
+create or replace function sdh(
+	_tableName regclass,
+	bucketWidth integer
+)
 returns table (foo integer)
 language plpgsql
 as $$
 begin
-	return query (
-		select * from unnest(array(
-			-- calculate the histogram
+	return query execute
+		'select * from unnest(array(
 			select calc_histogram(array(
-				-- calculate point-to-point distance of all points
-				-- and find histogram indices
-				select cagg(x,y,z) from points
-			))
-		)) as SDH
-	);
+				select cagg(x,y,z,'||bucketWidth||') from '||_tableName||
+			'))
+		)) as SDH';
 end;
 $$;
 
-select sdh();
+select sdh('points', 10);
+
