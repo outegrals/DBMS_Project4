@@ -193,11 +193,6 @@ values
 ('(-53.88,85.44,-94.40)'),
 ('(-61.39,-7.78,-19.97)');
 
--- create table for SDH
-create table sdh (
-	test float
-);
-
 -- function to calculate 3d spatial distance
 create function distance3d(point3d, point3d)
 returns cstring
@@ -206,7 +201,6 @@ language c immutable strict;
 
 -- select distance3d('(2,3,4)'::point3d, '(1,2,3)'::point3d);
 select distance3d(p, '(1,2,3)'::point3d) from points;
-
 
 -- function to calculate of given point to all other points
 create function one_to_all_others (i point3d)
@@ -223,3 +217,22 @@ end;
 $$;
 
 select one_to_all_others(1);
+
+
+create table testTable (
+	x numeric,
+	y numeric,
+	z numeric
+);
+insert into testTable
+values
+(1.0, 2.0, 3.0),
+(2.0, 3.0, 4.0),
+(3.0, 4.0, 5.0);
+
+create or replace function test ()
+returns point3d
+language sql
+as $$
+select x, y, z from testTable limit 2;
+$$;

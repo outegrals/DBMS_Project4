@@ -4,6 +4,15 @@
 -- return a set of data as a function result and as such can now only output
 -- the distances calculated as an array string
 
+-- TODO: add references in paper
+-- TODO: talk about SDH distribution
+-- TODO: explain how quad tree could be used (luis)
+-- TODO: add image for point-to-point distance calculation
+-- TODO: add image for histogram index calculation
+-- TODO: have bucket width be user input
+-- TODO: don't hardcode points table and column names
+-- TODO: make it work with custom point type
+
 -- clean up
 drop type if exists state cascade;
 drop table if exists points cascade;
@@ -31,35 +40,40 @@ create table points (
 -- that distance should belong to given the bucket width
 -- TODO: potentially use the distance function here?
 create or replace function one_to_all_following (
-	n integer,
-	bucketWidth integer
+	_table regclass,
+	_x varchar,
+	_y varchar,
+	_z varchar,
+	bucketWidth integer,
+	n integer
 )
-returns table (foo numeric)
+returns table(foo numeric)
 language plpgsql
 as $$
 begin
-	return query (
-		select
-		floor(
+	return query execute
+		'select floor(
 			sqrt(
-				power(x - nth_value(x,n) over w, 2)
-				+ power(y - nth_value(y,n) over w, 2)
-				+ power(z - nth_value(z,n) over w, 2)
-			) / bucketWidth
+				power('||_x||' - nth_value('||_x||','||n||') over w, 2)
+				+ power('||_y||' - nth_value('||_y||','||n||') over w, 2)
+				+ power('||_z||' - nth_value('||_z||','||n||') over w, 2)
+			) / '||bucketWidth||'
 		)
-		from points
-		window w as (order by x,y,z)
-		offset n
-	);
+		from '||_table||'
+		window w as (order by '||_x||','||_y||','||_z||')
+		offset '||n||'';
 end;
 $$;
+select input('points', 'x', 'y', 'z', 88, 10);
 
 -- state transition function: passed from row to row
 create or replace function stfunc (
 	s state,
-	x numeric,
-	y numeric,
-	z numeric
+	_table regclass,
+	_x varchar,
+	_y varchar,
+	_z varchar,
+	bucketWidth integer
 )
 returns state
 language plpgsql
@@ -69,7 +83,7 @@ declare
 	query numeric[];
 begin
 	-- TODO: pass in bucket width as a parameter
-	query = (select array(select one_to_all_following(s.n + 1, 10)));
+	query = (select array(select one_to_all_following('points', 'x', 'y', 'z', bucketWidth, s.n + 1)));
 	sn.res = s.res || query;
 	sn.n = s.n + 1;
 return sn;
@@ -121,11 +135,22 @@ end;
 $$;
 
 -- turn the histogram into a table
-select * from unnest(array(
-	-- calculate the histogram
-	select calc_histogram(array(
-		-- calculate point-to-point distance of all points
-		-- and find histogram indices
-		select cagg(x,y,z) from points
-	))
-)) as SDH;
+create or replace function sdh()
+returns table (foo integer)
+language plpgsql
+as $$
+begin
+	return query (
+		select * from unnest(array(
+			-- calculate the histogram
+			select calc_histogram(array(
+				-- calculate point-to-point distance of all points
+				-- and find histogram indices
+				select cagg(x,y,z) from points
+			))
+		)) as SDH
+	);
+end;
+$$;
+
+select sdh();
