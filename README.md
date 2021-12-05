@@ -32,6 +32,10 @@ psql test
 
 ## Methodology
 
+We start by creating a table to store all our 3D points. The table has 3
+columns to store each of our 3 dimensions. We can then insert our points into
+this table one at a time to store the dimensional data.
+
 * create table to house points
 * fill it up with 3d points
 * we need to be able to perform a nested loop over the entire table to be able
@@ -124,3 +128,85 @@ psql test
 		our algorithm.
 
 ## Performance
+
+
+## Figures/Tables
+
+### input points
+
+```
+db=# select * from points limit 20;
+   x    |   y    |   z
+--------+--------+--------
+ -63.91 |   0.51 | -20.28
+  57.07 | -72.70 |  -1.19
+ -35.25 |  12.16 |  41.00
+ -23.34 |  48.44 |  31.09
+  36.10 | -75.22 |  -1.79
+ -63.71 |  94.41 | -65.74
+ -73.50 |  58.67 | -71.96
+ -21.95 |  84.23 | -60.07
+ -37.91 |  -5.07 |  63.12
+ -55.53 |  94.17 | -78.86
+ -33.87 |  27.29 |  50.70
+  99.98 |  68.64 |   4.55
+ -96.53 |  55.92 | -68.24
+ -26.10 |  44.95 |  37.59
+  74.76 | -28.64 | -92.08
+ -55.42 | -96.73 |  21.50
+ -54.24 |  25.24 | -48.78
+   5.59 | -74.44 |  81.68
+  15.06 | -16.35 |  34.61
+   7.36 | -64.62 |  61.37
+(20 rows)
+```
+
+### point-to-point distances
+
+```
+
+```
+
+### histogram indices
+
+```
+
+```
+
+### final sdh output
+
+```
+db=# select sdh();
+ sdh
+-----
+   5
+  17
+  37
+  76
+  97
+ 144
+ 149
+ 203
+ 248
+ 282
+ 277
+ 325
+ 323
+ 316
+ 361
+ 335
+ 356
+ 334
+ 291
+ 235
+ 165
+ 136
+ 110
+  49
+  36
+  24
+  11
+   7
+   1
+(29 rows)
+```
