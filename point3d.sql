@@ -1,16 +1,6 @@
 -- Drops necessary tables and functions for 2D points
-DROP TABLE IF EXISTS points2d CASCADE;
 DROP FUNCTION IF EXISTS DIS2D CASCADE;
 DROP FUNCTION IF EXISTS distance2d CASCADE;
-
--- Creates the table of 2D points
-CREATE TABLE points2d( p point );
-
--- Populates the table with data
-\copy points2d FROM short_output_format2D.txt;
-
--- Creates a quadtree index of the 2D points table
-CREATE INDEX points_quad_indx ON points2d USING spgist(p);
 
 -- Creates the function call for calculating distance between two 2D points
 CREATE OR REPLACE FUNCTION distance2d(float4, float4, float4, float4) 
@@ -35,12 +25,7 @@ WHERE t1.p != t2.p';
 END
 $func$ LANGUAGE plpgsql;
 
--- A call of the distance function for 2D points
-SELECT * FROM DIS2D(NULL::points2d);
-
-
 -- Drops necessary tables and functions for 3D points
-DROP TABLE IF EXISTS points3d CASCADE;
 DROP FUNCTION IF EXISTS DIS3D CASCADE;
 DROP FUNCTION IF EXISTS distance3d CASCADE;
 DROP TYPE IF EXISTS point3d CASCADE;
@@ -74,18 +59,6 @@ CREATE TYPE point3d (
     ELEMENT = float4
 );
 
--- Creates the table of 3D points
-CREATE TABLE points3d( p point3d );
-
--- Populates the table with data
-\copy points3d FROM short_output_format3D.txt;
-
-/* CANNOT create index with the data type point3d
-   Get this error "HINT:  You must specify an operator class for the index or define a default operator class for the data type."
--- Creates a quadtree index of the 3D points table
-CREATE INDEX points_quad_indx ON points3d USING spgist(p);
-*/
-
 -- Creates the function call for calculating distance between two 2D points
 CREATE OR REPLACE FUNCTION distance3d(float4, float4, float4, float4, float4, float4) 
 RETURNS float4 AS 'point3d.so', 'distance3d' 
@@ -114,5 +87,44 @@ WHERE   t1.p[0] != t2.p[0]
 END
 $func$ LANGUAGE plpgsql;
 
--- A call of the function
-SELECT * FROM DIS3D(NULL::points3d);
+-- Drops necessary tables and functions for the Histogram
+DROP FUNCTION IF EXISTS SDH CASCADE;
+DROP procedure IF EXISTS createHistogram cascade;
+DROP function IF EXISTS calculateIndex cascade;
+
+CREATE OR REPLACE procedure createHistogram()
+AS
+$func$
+BEGIN
+CREATE TABLE if NOT EXISTS histogram(i int, count int);
+END
+$func$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION calculateIndex(distance float, bucketWidth integer)
+RETURNS INT as
+$func$
+BEGIN
+RETURN FLOOR(distance / bucketWidth);
+end
+$func$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION SDH(distance float, bucketWidth integer, tbl anyelement) 
+RETURNS INT AS 
+$func$
+DECLARE bucket INT;
+BEGIN
+
+EXECUTE
+'
+insert into  ' || pg_typeof(tbl) || ' (i,count)
+select calculateIndex( ' || distance || ', ' || bucketWidth ||' ) , 0 
+where not exists (select * from ' || pg_typeof(tbl) || ' where i = calculateIndex( ' || distance || ' , ' || bucketWidth ||' ));
+
+update ' || pg_typeof(tbl) || '
+set count = (select count from ' || pg_typeof(tbl) || ' where i = calculateIndex( ' || distance || ', ' || bucketWidth || ')) + 1
+where i = calculateIndex( ' || distance || ', ' || bucketWidth || ');
+';
+
+RETURN 0;
+END
+$func$ LANGUAGE plpgsql;
